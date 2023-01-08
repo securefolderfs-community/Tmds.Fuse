@@ -34,7 +34,7 @@ namespace Tmds.Fuse
         public virtual int Flush(ReadOnlySpan<byte> path, ref FuseFileInfo fi)
             => -ENOSYS;
 
-        public virtual int FSync(ReadOnlySpan<byte> path, ref FuseFileInfo fi)
+        public virtual int FSync(ReadOnlySpan<byte> path, bool onlyData, ref FuseFileInfo fi)
             => -ENOSYS;
 
         public virtual int FSyncDir(ReadOnlySpan<byte> readOnlySpan, bool onlyData, ref FuseFileInfo fi)
