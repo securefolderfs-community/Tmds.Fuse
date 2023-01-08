@@ -214,11 +214,11 @@ namespace Tmds.Fuse
             }
         }
 
-        private unsafe int Fsync(path* path, fuse_file_info* fi)
+        private unsafe int Fsync(path* path, int datasync, fuse_file_info* fi)
         {
             try
             {
-                return _fileSystem.FSync(ToSpan(path), ref ToFileInfoRef(fi));
+                return _fileSystem.FSync(ToSpan(path), datasync != 0, ref ToFileInfoRef(fi));
             }
             catch
             {
@@ -539,6 +539,8 @@ namespace Tmds.Fuse
                         try
                         {
                             LibFuse.fuse_opt_add_arg(&args, "");
+                            if (_mountOptions.Options != null)
+                                LibFuse.fuse_opt_add_arg(&args, $"-o{_mountOptions.Options}");
 
                             fuse_operations ops;
                             ops.getattr = Marshal.GetFunctionPointerForDelegate(_getattr);
