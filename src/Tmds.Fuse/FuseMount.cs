@@ -214,11 +214,11 @@ namespace Tmds.Fuse
             }
         }
 
-        private unsafe int Fsync(path* path, fuse_file_info* fi)
+        private unsafe int Fsync(path* path, int datasync, fuse_file_info* fi)
         {
             try
             {
-                return _fileSystem.FSync(ToSpan(path), ref ToFileInfoRef(fi));
+                return _fileSystem.FSync(ToSpan(path), datasync != 0, ref ToFileInfoRef(fi));
             }
             catch
             {

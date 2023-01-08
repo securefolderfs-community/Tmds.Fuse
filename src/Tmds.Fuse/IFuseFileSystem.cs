@@ -29,7 +29,7 @@ namespace Tmds.Fuse
         int Link(ReadOnlySpan<byte> fromPath, ReadOnlySpan<byte> toPath);
         int UpdateTimestamps(ReadOnlySpan<byte> path, ref timespec atime, ref timespec mtime, FuseFileInfoRef fiRef);
         int Flush(ReadOnlySpan<byte> path, ref FuseFileInfo fi);
-        int FSync(ReadOnlySpan<byte> path, ref FuseFileInfo fi);
+        int FSync(ReadOnlySpan<byte> path, bool onlyData, ref FuseFileInfo fi);
         int SetXAttr(ReadOnlySpan<byte> path, ReadOnlySpan<byte> name, ReadOnlySpan<byte> data, int flags);
         int GetXAttr(ReadOnlySpan<byte> path, ReadOnlySpan<byte> name, Span<byte> data);
         int ListXAttr(ReadOnlySpan<byte> path, Span<byte> list);

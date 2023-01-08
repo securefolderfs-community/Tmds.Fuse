@@ -59,9 +59,9 @@ namespace Tmds.Fuse
         public virtual int Flush(string path, ref FuseFileInfo fi)
             => -ENOSYS;
 
-        public override int FSync(ReadOnlySpan<byte> path, ref FuseFileInfo fi)
-            => FSync(ToString(path), ref fi);
-        public virtual int FSync(string path, ref FuseFileInfo fi)
+        public override int FSync(ReadOnlySpan<byte> path, bool onlyData, ref FuseFileInfo fi)
+            => FSync(ToString(path), onlyData, ref fi);
+        public virtual int FSync(string path, bool onlyData, ref FuseFileInfo fi)
             => -ENOSYS;
 
         public override int GetAttr(ReadOnlySpan<byte> path, ref stat stat, FuseFileInfoRef fiRef)
