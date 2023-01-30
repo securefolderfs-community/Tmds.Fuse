@@ -41,7 +41,7 @@ namespace Tmds.Fuse
             var psi = new ProcessStartInfo
             {
                 FileName = Fusermount,
-                Arguments = $"-u -q -z {mountPoint}",
+                Arguments = $"-u -q -z \"{mountPoint}\"",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
