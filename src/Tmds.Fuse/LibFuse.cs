@@ -38,6 +38,9 @@ namespace Tmds.Fuse
         public delegate void fuse_destroy_delegate(fuse* f);
         public static readonly fuse_destroy_delegate fuse_destroy;
 
+        public delegate void fuse_exit_delegate(fuse* f);
+        public static readonly fuse_exit_delegate fuse_exit;
+
         static LibFuse()
         {
             s_libFuseHandle = dlopen(LibraryName, 2);
@@ -54,6 +57,7 @@ namespace Tmds.Fuse
             fuse_unmount = CreateDelegate<fuse_unmount_delegate>("fuse_unmount");
             fuse_destroy = CreateDelegate<fuse_destroy_delegate>("fuse_destroy");
             fuse_opt_free_args = CreateDelegate<fuse_opt_free_args_Delegate>("fuse_opt_free_args");
+            fuse_exit = CreateDelegate<fuse_exit_delegate>("fuse_exit");
         }
 
         private static T CreateDelegate<T>(string name, string version = "FUSE_3.0")

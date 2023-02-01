@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Tmds.Linux;
@@ -47,6 +48,7 @@ namespace Tmds.Fuse
         private Task _fuseLoopTask;
         private readonly object _gate = new object();
         private bool _mounted;
+        private unsafe fuse* _fuse;
         private readonly TaskCompletionSource<object> _mountTaskCompletion = new TaskCompletionSource<object>();
 
         private unsafe class ManagedFiller
@@ -535,7 +537,7 @@ namespace Tmds.Fuse
                         }
 
                         fuse_args args;
-                        fuse* fuse = null;
+                        _fuse = null;
                         try
                         {
                             LibFuse.fuse_opt_add_arg(&args, "");
@@ -575,12 +577,12 @@ namespace Tmds.Fuse
                             ops.fallocate = Marshal.GetFunctionPointerForDelegate(_fallocate);
                             ops.init = Marshal.GetFunctionPointerForDelegate(_init);
 
-                            fuse = LibFuse.fuse_new(&args, &ops, (UIntPtr)sizeof(fuse_operations), null);
-                            if (fuse == null)
+                            _fuse = LibFuse.fuse_new(&args, &ops, (UIntPtr)sizeof(fuse_operations), null);
+                            if (_fuse == null)
                             {
                                 throw CreateException(nameof(LibFuse.fuse_new), 0);
                             }
-                            int rv = LibFuse.fuse_mount(fuse, _mountPoint);
+                            int rv = LibFuse.fuse_mount(_fuse, _mountPoint);
                             if (rv != 0)
                             {
                                 throw CreateException(nameof(LibFuse.fuse_mount), rv);
@@ -590,11 +592,11 @@ namespace Tmds.Fuse
                                 bool singleThread = !_fileSystem.SupportsMultiThreading || _mountOptions.SingleThread;
                                 if (singleThread)
                                 {
-                                    rv = LibFuse.fuse_loop(fuse);
+                                    rv = LibFuse.fuse_loop(_fuse);
                                 }
                                 else
                                 {
-                                    rv = LibFuse.fuse_loop_mt(fuse, clone_fd: 0);
+                                    rv = LibFuse.fuse_loop_mt(_fuse, clone_fd: 0);
                                 }
                                 if (rv == 0)
                                 {
@@ -613,7 +615,7 @@ namespace Tmds.Fuse
                             {
                                 lock (_gate)
                                 {
-                                    LibFuse.fuse_unmount(fuse);
+                                    LibFuse.fuse_unmount(_fuse);
                                     if (_mounted)
                                     {
                                         _mounted = false;
@@ -628,9 +630,9 @@ namespace Tmds.Fuse
                         }
                         finally
                         {
-                            if (fuse != null)
+                            if (_fuse != null)
                             {
-                                LibFuse.fuse_destroy(fuse);
+                                LibFuse.fuse_destroy(_fuse);
                             }
                             LibFuse.fuse_opt_free_args(&args);
                         }
@@ -671,9 +673,23 @@ namespace Tmds.Fuse
             }
         }
 
-        public async Task<bool> UnmountAsync(int millisecondsTimeout)
+        public async Task<bool> UnmountAsync(int millisecondsTimeout, bool force = false)
         {
-            LazyUnmount();
+            if (force)
+            {
+                unsafe
+                {
+                    // Flag session as terminated, the event loop will terminate on the next request
+                    LibFuse.fuse_exit(_fuse);
+
+                    stat stat;
+                    fixed (byte *path = Encoding.UTF8.GetBytes(_mountPoint))
+                        LibC.stat(path, &stat);
+                }
+            }
+            else
+                LazyUnmount();
+
             if (_fuseLoopTask.IsCompleted)
             {
                 return true;
