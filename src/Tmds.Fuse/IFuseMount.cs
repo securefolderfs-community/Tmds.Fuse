@@ -7,6 +7,6 @@ namespace Tmds.Fuse
     {
         Task WaitForUnmountAsync();
         void LazyUnmount();
-        Task<bool> UnmountAsync(int timeout = -1);
+        Task<bool> UnmountAsync(int timeout = -1, bool force = false);
     }
 }
