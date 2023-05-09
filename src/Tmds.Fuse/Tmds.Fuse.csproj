@@ -1,10 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <VersionPrefix>0.1.0</VersionPrefix>
+    <Platforms>AnyCPU;x64;x86;ARM64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
